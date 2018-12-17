@@ -1,6 +1,8 @@
 package com.example.maste.todoapp;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> list;
     private ArrayAdapter<String> listAdapter;
     private ListView items;
+
+    protected final static String ITEM_TXT = "itemText";
+    protected final static String ITEM_POS =  "itemPos";
+    private final int REQUEST_CODE = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +63,30 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        items.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(MainActivity.this, ItemEditActivity.class);
+                i.putExtra(ITEM_TXT, listAdapter.getItem(position));
+                i.putExtra(ITEM_POS, position);
+                startActivityForResult(i, REQUEST_CODE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE)
+        {
+            String update = data.getStringExtra(ITEM_TXT);
+            int pos = data.getIntExtra(ITEM_POS, 0);
+            list.set(pos, update);
+            listAdapter.notifyDataSetChanged();
+            writeList();
+            Toast.makeText(this, "Item updated successfully.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private File getDataFile() {
